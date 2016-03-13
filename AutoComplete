@@ -1,0 +1,73 @@
+- autocomplete demo
+
+**************************
+DesignationUC.ascx.cs
+***************************
+
+        [WebMethod]
+        public static List<string> GetDesignations(string prefix)
+        {
+            using (Database1Entities db = new Database1Entities())
+            {
+                return db.DesignationDetails.Where(x => x.DesignationName.StartsWith(prefix)).Select(x => x.DesignationName).ToList();
+                //var designations = (from a in db.DesignationDetails where a.DesignationName.StartsWith(prefix) select a.DesignationName).ToList();
+            }
+
+        }
+
+********************************
+
+********************
+About.aspx.cs
+********************
+[WebMethod]
+        public static List<string> GetDesignationsData(string prefix)
+        {
+            return DesignationUC.GetDesignations(prefix);
+        }
+*******************************
+
+********************
+About.aspx
+********************
+
+
+ <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    
+
+
+
+ $(function () {
+            $("#MainContent_txtautocom").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: '<%=ResolveUrl("~/About.aspx/GetDesignationsData") %>',
+                        data: "{ 'prefix': '" + request.term + "'}",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            response($.map(data.d, function (item) {
+                                return {
+                                    label: item.split('-')[0],
+                                    val: item.split('-')[1]
+                                }
+                            }))
+                        },
+                        error: function (response) {
+                            alert(response.responseText);
+                        },
+                        failure: function (response) {
+                            alert(response.responseText);
+                        }
+                    });
+                },
+                select: function (e, i) {
+                    $("#MainContent_txtautocom").val(i.item.val);
+                },
+                minLength: 1
+            });
+        });
+***********************************
